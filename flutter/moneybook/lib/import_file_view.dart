@@ -35,9 +35,7 @@ class _ImportExportFileViewState extends State<ImportExportFileView> {
 
   final _supportTypes = {"Original","Rakuna Kakeibo","Mizuho direct"};
   var _curType = null;
-  AnimationController? _animCont=null;
-
-
+  double? _loadProgressValue=null;
   void _onOkClick()async {
     if(widget.isImport) {
       FilePickerResult? result = await FilePicker.platform.pickFiles(type:FileType.any);
@@ -75,7 +73,10 @@ class _ImportExportFileViewState extends State<ImportExportFileView> {
 //              usages = await MoneyBookManager.getManager().getUsages();
               uAddList.add(obj.usage);
             }
+            setState((){
+              _loadProgressValue=rowIdx/rows.length.toDouble();
 
+            });
             tranList.add(obj);
           }
           await TransactionUtils.addRangeMethod(mAddList);
@@ -150,7 +151,10 @@ class _ImportExportFileViewState extends State<ImportExportFileView> {
 //              usages = await MoneyBookManager.getManager().getUsages();
               uAddList.add(trans.usage);
             }
-            
+            setState((){
+              _loadProgressValue=rowIdx/rows.length.toDouble();
+
+            });
           }
           TransactionUtils.addRange(tranList);
           TransactionUtils.addRangeMethod(mAddList);
@@ -253,7 +257,7 @@ class _ImportExportFileViewState extends State<ImportExportFileView> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children:null==_animCont? [
+          children:null==_loadProgressValue? [
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -295,7 +299,7 @@ class _ImportExportFileViewState extends State<ImportExportFileView> {
                   )
                 ])
           ]:[
-            LinearProgressIndicator(value:_animCont!.value)
+            LinearProgressIndicator(value: _loadProgressValue)
           ],
         ),
       ),

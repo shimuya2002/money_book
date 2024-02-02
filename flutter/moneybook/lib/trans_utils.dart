@@ -225,7 +225,9 @@ class TransactionUtils{
 
     final prefs = await SharedPreferences.getInstance();
     var result=List<Transaction>.empty(growable: true);
-    var tmpYMDate=DateTime(b.year,b.month,1);
+    var bUTC=b.toUtc();
+    var eUTC=e.toUtc();
+    var tmpYMDate=DateTime(bUTC.year,bUTC.month,1);
     do{
       var keyStr=tmpYMDate.millisecondsSinceEpoch.toString();
 
@@ -249,7 +251,7 @@ class TransactionUtils{
           12==tmpYMDate.month?1: tmpYMDate.month+1,1);
 
 
-    }while(0>tmpYMDate.compareTo(e));
+    }while(0>tmpYMDate.compareTo(eUTC));
 
 
     result.sort((a,b)=>a.transactionDate.compareTo(b.transactionDate) );

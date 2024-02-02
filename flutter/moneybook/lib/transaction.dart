@@ -15,10 +15,13 @@ abstract class Currency{
     return JPY(v.toInt());
   }
 
+
   Currency abs();
   Currency neg();
   int comp(int v);
   int toInt();
+
+  Currency add(Currency c1);
 }
 class JPY extends Currency {
 
@@ -30,19 +33,27 @@ class JPY extends Currency {
   String toString() {
     return "￥${value}";
   }
+  @override
   Currency abs(){
 
     return JPY(value.abs());
 
   }
+  @override
   Currency neg(){
     return JPY(-value);
   }
+  @override
   int comp(int v){
     return value-v;
   }
+  @override
   int toInt(){
     return value;
+  }
+  @override
+  Currency add(Currency c1){
+    return Currency.gen((value+c1.toInt()).toDouble());
   }
 }
 ///取引を記述するクラス

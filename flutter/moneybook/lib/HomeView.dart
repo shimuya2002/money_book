@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:moneybook/trans_utils.dart';
 import 'package:moneybook/transaction.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,7 @@ class _HomeViewState extends State<HomeView> {
   var month_out=0;
   var _selList=List<int>.empty(growable: true);
   var _editTransIdx=-1;
+  var _chartMode=0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,16 +45,20 @@ class _HomeViewState extends State<HomeView> {
       ),
       drawer: _gen_drawer(),
       body: _gen_content(),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar:BottomNavigationBar(
 
-          items: [
+          items: const [
             BottomNavigationBarItem(
-                icon: Icon(Icons.list), label: 'List'),
-
+                icon:Icon(Icons.list), label: 'List'),
+            BottomNavigationBarItem(
+                icon:Icon(Icons.pie_chart), label: 'Chart'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.search), label: 'Search'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings), label: 'Config'),
           ],
           currentIndex: _currentPage,
+        type: BottomNavigationBarType.fixed,
         onTap:(int index) {
           setState(() {
             _currentPage = index;
@@ -62,7 +69,7 @@ class _HomeViewState extends State<HomeView> {
 
       floatingActionButton: _currentPage == 0 ? FloatingActionButton(
         onPressed: _addTransaction,
-        tooltip: 'Increment',
+        tooltip: 'Add transaction',
         child: const Icon(Icons.add),
       ) : null,
     );
@@ -96,11 +103,12 @@ class _HomeViewState extends State<HomeView> {
     }
   }
   Widget _gen_content() {
+    SizeConfig().init(context);
     if (0 == _currentPage) {
       if (begin == end) {
-        begin = DateTime(begin.year, begin.month, 1);
+        begin = DateTime(begin.year, begin.month, 1).toLocal();
         end = DateTime(begin.month + 1 < 12 ? begin.year : begin.year + 1,
-            begin.month + 1 < 12 ? begin.month + 1 : 1, 1);
+            begin.month + 1 < 12 ? begin.month + 1 : 1, 1).toLocal();
 
         trans_list = TransactionUtils.getData(begin, end);
       }
@@ -126,7 +134,7 @@ class _HomeViewState extends State<HomeView> {
             if (_selList.contains(i)) {
               selVal += t.value.toInt();
             }
-            var tDate=t.transactionDate.toLocal();
+            var tDate = t.transactionDate.toLocal();
             if (curDate.year != tDate.year ||
                 curDate.month != tDate.month ||
                 curDate.day != tDate.day) {
@@ -145,7 +153,8 @@ class _HomeViewState extends State<HomeView> {
             tmp.add(ListTile(textColor: Colors.black,
               tileColor: _selList.contains(i) ? Colors.blue : Colors.white,
               title: Text(
-                  "${time_fmt.format(t.transactionDate.toLocal())} ${t.method} ${t
+                  "${time_fmt.format(t.transactionDate.toLocal())} ${t
+                      .method} ${t
                       .usage} ${t.note} ${t.value}"),
 
               onTap: () {
@@ -172,7 +181,7 @@ class _HomeViewState extends State<HomeView> {
             tmp.clear();
           }
 
-          SizeConfig().init(context);
+
 
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -191,8 +200,8 @@ class _HomeViewState extends State<HomeView> {
               SizedBox(height: SizeConfig.blockSizeVertical * 70, child:
               IndexedListView.builder(controller: IndexedScrollController(
                   initialIndex: -1 != _editTransIdx
-                      ?  _editTransIdx
-                      : list.length-1),
+                      ? _editTransIdx
+                      : list.length - 1),
                   minItemCount: 0,
                   maxItemCount: list.length - 1,
                   itemBuilder: (context, index) {
@@ -207,7 +216,67 @@ class _HomeViewState extends State<HomeView> {
         }
       }
       );
-    }else if(1==_currentPage){
+    }else if(1==_currentPage) {
+      final modeCaption = ["Methods", "Usages"];
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButton<String>(
+              value: modeCaption[_chartMode],
+              items: modeCaption.map<DropdownMenuItem<String>>(
+                      (String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  if (null != newValue) {
+                    _chartMode = modeCaption.indexOf(newValue);
+                  }
+                });
+              }
+
+          ),
+          FutureBuilder(future: trans_list, builder: (BuildContext context,
+              AsyncSnapshot<List<Transaction>> snapshot) {
+            if (snapshot.hasData) {
+              var chartTbl = HashMap<String, Currency>();
+              for (var t in snapshot.data!) {
+                var c = t.value;
+                if (0 == _chartMode) {
+                  if (chartTbl.containsKey(t.method)) {
+                    c = c.add(chartTbl[ t.method]!);
+                  }
+                  chartTbl[t.method] = c;
+                } else {
+                  if (chartTbl.containsKey(t.usage)) {
+                    c = c.add(chartTbl[ t.usage]!);
+                  }
+                  chartTbl[t.usage] = c;
+                }
+              }
+
+
+              return SizedBox(height: SizeConfig.blockSizeVertical * 70, child:
+
+              ListView.builder(
+                itemCount: chartTbl.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var k = chartTbl.keys.elementAt(index);
+                    return ListTile(
+                      title: Text("${k} ${chartTbl[k]}"),
+                    );
+                  }));
+            } else {
+              return  SizedBox(height: SizeConfig.blockSizeVertical * 70, child:ListView());
+            }
+          })
+        ],
+      );
+    }else if(3==_currentPage){
       end=begin;
       return ListView(
         children: [
@@ -249,7 +318,7 @@ class _HomeViewState extends State<HomeView> {
       if(null!=value){
         TransactionUtils.add(value);
 
-        begin=end= value.transactionDate;
+        begin=end= (value.transactionDate).toLocal();
 
       }
 
