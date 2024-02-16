@@ -48,344 +48,346 @@ class _EditTransactionState extends State<EditTransaction> {
     SizeConfig().init(context);
 
 
-    if(null==_date_time && null!=widget.target){
-
-        _usage=widget.target!.usage;
-        _method=widget.target!.method;
-        _date_time=widget.target!.transactionDate.toLocal();
-        if(0>widget.target!.value.toInt()){
-          _type=1;
-        }
-        _valueText=widget.target!.value.toInt().abs().toString();
-        _controller.text=widget.target!.note;
-
-    }else if(null==_date_time){
-      _date_time=DateTime.now();
+    if (null == _date_time && null != widget.target) {
+      _usage = widget.target!.usage;
+      _method = widget.target!.method;
+      _date_time = widget.target!.transactionDate.toLocal();
+      if (0 > widget.target!.value.toInt()) {
+        _type = 1;
+      }
+      _valueText = widget.target!.value.toInt().abs().toString();
+      _controller.text = widget.target!.note;
+    } else if (null == _date_time) {
+      _date_time = DateTime.now();
     }
 
-    return Scaffold(
-        appBar: AppBar(
-          // TRY THIS: Try changing the color here to a specific color (to
-          // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-          // change color while the other colors stay the same.
-          backgroundColor: Theme
-              .of(context)
-              .colorScheme
-              .inversePrimary,
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
-        ),
-        body: SingleChildScrollView(
-            child: Column(
-                children: [
-                  Row(children: [
-                    Text("種別"),
-                    Flexible(
-                        child: RadioListTile(
-                            title: Text("収入"),
-                            value: 0,
-                            groupValue: _type,
-                            onChanged: _onTypeChanged)),
-                    Flexible(
-                        child: RadioListTile(
-                            title: Text("支出"),
-                            value: 1,
-                            groupValue: _type,
-                            onChanged: _onTypeChanged))
-                  ]),
-                  Row(
+    return  PopScope(
+        canPop: false,
+        child: Scaffold(
+            appBar: AppBar(
+              // TRY THIS: Try changing the color here to a specific color (to
+              // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+              // change color while the other colors stay the same.
+              backgroundColor: Theme
+                  .of(context)
+                  .colorScheme
+                  .inversePrimary,
+              automaticallyImplyLeading: false,
+              // Here we take the value from the MyHomePage object that was created by
+              // the App.build method, and use it to set our appbar title.
+              title: Text(widget.title),
+            ),
+            body: SingleChildScrollView(
+                child: Column(
                     children: [
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: Text("Date")),
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: Text("${date_fmt.format(_date_time!)}")),
-                      ElevatedButton(
-                        child: Text("Change"),
-                        onPressed: () {
-                          _onDateChange(context);
-                        },
-
-                      )
-                    ],
-
-                  ),
-                  Row(
-                    children: [
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: Text("Time")),
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: Text("${time_fmt.format(_date_time!)}")),
-                      ElevatedButton(
-                        child: Text("Change"),
-                        onPressed: () {
-                          _onTimeChange(context);
-                        },
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: const Text("支払方法")),
-                      FutureBuilder(
-                          future: _method_list,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<String>> snapshot) {
-                            if (snapshot.hasData) {
-                              if (!snapshot.data!.isEmpty &&
-                                  !snapshot.data!.contains(_method!)) {
-                                _method = snapshot.data!.first;
-                              }
-
-                              return DropdownButton<String>(
-                                value: _method,
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    if (null != newValue) {
-                                      _method= newValue;
-                                    }
-                                  });
-                                },
-                                items: snapshot.data!
-                                    .map<DropdownMenuItem<String>>(
-                                        (String value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(value),
-                                      );
-                                    }).toList(),
-                              );
-                            } else {
-                              return DropdownButton<String>(
-                                  value: null,
-                                  onChanged: (value) {},
-                                  items: []);
-                            }
-                          }),
-                    ],
-
-                  ),
-
-                  Row(
-                    children: [
-
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: Text("使途")),
-                      FutureBuilder(
-                          future: _usage_list,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<String>> snapshot) {
-                            if (snapshot.hasData) {
-                              if (!snapshot.data!.isEmpty &&
-                                  !snapshot.data!.contains(_usage!)) {
-                                _usage = snapshot.data!.first;
-                              }
-
-                              return DropdownButton<String>(
-                                value: _usage,
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    if (null != newValue) {
-                                      _usage = newValue;
-                                    }
-                                  });
-                                },
-                                items: snapshot.data!
-                                    .map<DropdownMenuItem<String>>(
-                                        (String value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value,
-                                        child: Text(value),
-                                      );
-                                    }).toList(),
-                              );
-                            } else {
-                              return DropdownButton<String>(
-                                  value: null,
-                                  onChanged: (value) {},
-                                  items: []);
-                            }
-                          }),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: Text("備考")),
-                      Container(width: SizeConfig.blockSizeHorizontal * 30,
-                          child: TextField(
-                            controller: _controller,
-                             
-
-                          ))
-
-                    ],
-                  ),
-                  Row(children: [
-                    Container(width: SizeConfig.blockSizeHorizontal * 30,
-                        child: Text("金額")),
-                    Container(width: SizeConfig.blockSizeHorizontal * 30,
-                        child: Text("${_valueText}")),
-                  ],),
-                  Table(
-
-                    children: [
-                      TableRow(children: [
-                        ElevatedButton(
-                          child: Text("%"),
-                          onPressed: () {},
-                        ),
-                        ElevatedButton(
-                          child: Text("AC"),
-                          onPressed: () {
-                            setState(() {
-                              _valueText = "0";
-                            });
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("BS"),
-                          onPressed: () {
-                            var text = _valueText;
-                            setState(() {
-                              if (0 < text.length) {
-                                _valueText = text.substring(0, text.length - 1);
-                              } else {
-                                _valueText = "0";
-                              }
-                            });
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("/"),
-                          onPressed: () {
-                            _onValueAdded("/");
-                          },
-                        ),
+                      Row(children: [
+                        Text("種別"),
+                        Flexible(
+                            child: RadioListTile(
+                                title: Text("収入"),
+                                value: 0,
+                                groupValue: _type,
+                                onChanged: _onTypeChanged)),
+                        Flexible(
+                            child: RadioListTile(
+                                title: Text("支出"),
+                                value: 1,
+                                groupValue: _type,
+                                onChanged: _onTypeChanged))
                       ]),
-                      TableRow(children: [
-                        ElevatedButton(
-                          child: Text("7"),
-                          onPressed: () {
-                            _onValueAdded("7");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("8"),
-                          onPressed: () {
-                            _onValueAdded("8");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("9"),
-                          onPressed: () {
-                            _onValueAdded("9");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("*"),
-                          onPressed: () {
-                            _onValueAdded("*");
-                          },
-                        ),
-                      ]),
-
-                      TableRow(children: [
-                        ElevatedButton(
-                          child: Text("4"),
-                          onPressed: () {
-                            _onValueAdded("4");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("5"),
-                          onPressed: () {
-                            _onValueAdded("5");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("6"),
-                          onPressed: () {
-                            _onValueAdded("6");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("-"),
-                          onPressed: () {
-                            _onValueAdded("-");
-                          },
-                        )
-                      ]),
-
-                      TableRow(children: [
-                        ElevatedButton(
-                          child: Text("1"),
-                          onPressed: () {
-                            _onValueAdded("1");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("2"),
-                          onPressed: () {
-                            _onValueAdded("2");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("3"),
-                          onPressed: () {
-                            _onValueAdded("3");
-                          },
-                        ),
-                        ElevatedButton(
-                          child: Text("+"),
-                          onPressed: () {
-                            _onValueAdded("+");
-                          },
-                        )
-                      ]),
-                      TableRow(
+                      Row(
                         children: [
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: Text("Date")),
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: Text("${date_fmt.format(_date_time!)}")),
                           ElevatedButton(
-                            child: Text("0"),
+                            child: Text("Change"),
                             onPressed: () {
-                              _onValueAdded("0");
+                              _onDateChange(context);
                             },
-                          ),
+
+                          )
+                        ],
+
+                      ),
+                      Row(
+                        children: [
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: Text("Time")),
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: Text("${time_fmt.format(_date_time!)}")),
                           ElevatedButton(
-                            child: Text("."),
+                            child: Text("Change"),
                             onPressed: () {
-                              _onValueAdded(".");
+                              _onTimeChange(context);
                             },
-                          ),
-                          Text(""),
-                          ElevatedButton(
-                            child: Text("="),
-                            onPressed: () {
-                              _calc();
-                            },
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: const Text("支払方法")),
+                          FutureBuilder(
+                              future: _method_list,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<List<String>> snapshot) {
+                                if (snapshot.hasData) {
+                                  if (!snapshot.data!.isEmpty &&
+                                      !snapshot.data!.contains(_method!)) {
+                                    _method = snapshot.data!.first;
+                                  }
+
+                                  return DropdownButton<String>(
+                                    value: _method,
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        if (null != newValue) {
+                                          _method = newValue;
+                                        }
+                                      });
+                                    },
+                                    items: snapshot.data!
+                                        .map<DropdownMenuItem<String>>(
+                                            (String value) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(value),
+                                          );
+                                        }).toList(),
+                                  );
+                                } else {
+                                  return DropdownButton<String>(
+                                      value: null,
+                                      onChanged: (value) {},
+                                      items: []);
+                                }
+                              }),
+                        ],
+
+                      ),
+
+                      Row(
+                        children: [
+
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: Text("使途")),
+                          FutureBuilder(
+                              future: _usage_list,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<List<String>> snapshot) {
+                                if (snapshot.hasData) {
+                                  if (!snapshot.data!.isEmpty &&
+                                      !snapshot.data!.contains(_usage!)) {
+                                    _usage = snapshot.data!.first;
+                                  }
+
+                                  return DropdownButton<String>(
+                                    value: _usage,
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        if (null != newValue) {
+                                          _usage = newValue;
+                                        }
+                                      });
+                                    },
+                                    items: snapshot.data!
+                                        .map<DropdownMenuItem<String>>(
+                                            (String value) {
+                                          return DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(value),
+                                          );
+                                        }).toList(),
+                                  );
+                                } else {
+                                  return DropdownButton<String>(
+                                      value: null,
+                                      onChanged: (value) {},
+                                      items: []);
+                                }
+                              }),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Container(width: SizeConfig.blockSizeHorizontal * 30,
+                              child: Text("備考")),
+                          Container(width: SizeConfig.blockSizeHorizontal * 70,
+                              child: TextField(
+                                controller: _controller,
+
+
+                              ))
+
+                        ],
+                      ),
+                      Row(children: [
+                        Container(width: SizeConfig.blockSizeHorizontal * 30,
+                            child: Text("金額")),
+                        Container(width: SizeConfig.blockSizeHorizontal * 30,
+                            child: Text("${_valueText}")),
+                      ],),
+                      Table(
+
+                        children: [
+                          TableRow(children: [
+                            ElevatedButton(
+                              child: Text("%"),
+                              onPressed: () {},
+                            ),
+                            ElevatedButton(
+                              child: Text("AC"),
+                              onPressed: () {
+                                setState(() {
+                                  _valueText = "0";
+                                });
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("BS"),
+                              onPressed: () {
+                                var text = _valueText;
+                                setState(() {
+                                  if (0 < text.length) {
+                                    _valueText =
+                                        text.substring(0, text.length - 1);
+                                  } else {
+                                    _valueText = "0";
+                                  }
+                                });
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("/"),
+                              onPressed: () {
+                                _onValueAdded("/");
+                              },
+                            ),
+                          ]),
+                          TableRow(children: [
+                            ElevatedButton(
+                              child: Text("7"),
+                              onPressed: () {
+                                _onValueAdded("7");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("8"),
+                              onPressed: () {
+                                _onValueAdded("8");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("9"),
+                              onPressed: () {
+                                _onValueAdded("9");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("*"),
+                              onPressed: () {
+                                _onValueAdded("*");
+                              },
+                            ),
+                          ]),
+
+                          TableRow(children: [
+                            ElevatedButton(
+                              child: Text("4"),
+                              onPressed: () {
+                                _onValueAdded("4");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("5"),
+                              onPressed: () {
+                                _onValueAdded("5");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("6"),
+                              onPressed: () {
+                                _onValueAdded("6");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("-"),
+                              onPressed: () {
+                                _onValueAdded("-");
+                              },
+                            )
+                          ]),
+
+                          TableRow(children: [
+                            ElevatedButton(
+                              child: Text("1"),
+                              onPressed: () {
+                                _onValueAdded("1");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("2"),
+                              onPressed: () {
+                                _onValueAdded("2");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("3"),
+                              onPressed: () {
+                                _onValueAdded("3");
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text("+"),
+                              onPressed: () {
+                                _onValueAdded("+");
+                              },
+                            )
+                          ]),
+                          TableRow(
+                            children: [
+                              ElevatedButton(
+                                child: Text("0"),
+                                onPressed: () {
+                                  _onValueAdded("0");
+                                },
+                              ),
+                              ElevatedButton(
+                                child: Text("."),
+                                onPressed: () {
+                                  _onValueAdded(".");
+                                },
+                              ),
+                              Text(""),
+                              ElevatedButton(
+                                child: Text("="),
+                                onPressed: () {
+                                  _calc();
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                  Row(
-                      children: [
-                        ElevatedButton(
-                          child: Text("OK"),
-                          onPressed: _onOk,
-                        ),
-                        ElevatedButton(
-                          child: Text("CANCEL"),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        )
-                      ])
-                ]
+                      Row(
+                          children: [
+                            ElevatedButton(
+                              child: Text("OK"),
+                              onPressed: _onOk,
+                            ),
+                            ElevatedButton(
+                              child: Text("CANCEL"),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            )
+                          ])
+                    ]
 
-            ))
-    );
+                ))
+        ));
   }
 
   ///種別が変更された
